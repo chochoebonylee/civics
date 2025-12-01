@@ -655,6 +655,7 @@
                 a: ["new years day", "martin luther king jr day", "presidents day", "memorial day", "independence day", "labor day", "columbus day", "veterans day", "thanksgiving", "christmas"]
             }
         ];
+          
 
         let currentQuestion = 0;
         let correctCount = 0;
@@ -735,7 +736,7 @@
             return words;
         }
 
-        function checkAnswerMatch(userAnswer, acceptedAnswers) {
+        function checkAnswerMatch(userAnswer, acceptedAnswers, minCorrect = null) {
             const normalized = normalizeAnswer(userAnswer);
             
             // First check for exact matches
@@ -745,13 +746,29 @@
                 }
             }
             
-            // Then check if user answer contains all keywords from any accepted answer
+            // If minCorrect is specified, count how many answers match
+            if (minCorrect !== null) {
+                let matchCount = 0;
+                for (let answer of acceptedAnswers) {
+                    const answerKeywords = getKeywords(answer);
+                    const userKeywords = getKeywords(userAnswer);
+                    
+                    const allKeywordsPresent = answerKeywords.every(keyword => 
+                        userKeywords.includes(keyword)
+                    );
+                    
+                    if (allKeywordsPresent && answerKeywords.length > 0) {
+                        matchCount++;
+                    }
+                }
+                return matchCount >= minCorrect;
+            }
+            
+            // Otherwise check if user answer contains all keywords from any accepted answer
             for (let answer of acceptedAnswers) {
                 const answerKeywords = getKeywords(answer);
                 const userKeywords = getKeywords(userAnswer);
                 
-                // Check if all keywords from the accepted answer are in the user's answer
-                // Now requires exact keyword matches, not partial
                 const allKeywordsPresent = answerKeywords.every(keyword => 
                     userKeywords.includes(keyword)
                 );
@@ -771,7 +788,7 @@
             const q = shuffledQuestions[currentQuestion];
             const feedback = document.getElementById('feedback');
             
-            const isCorrect = checkAnswerMatch(userAnswer, q.a);
+            const isCorrect = checkAnswerMatch(userAnswer, q.a, q.minCorrect || null);
 
             answered = true;
             document.getElementById('submitBtn').disabled = true;
@@ -856,9 +873,17 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 const setupVisible = document.getElementById('setupScreen').style.display !== 'none';
+                const quizVisible = document.getElementById('quizScreen').style.display !== 'none';
+                
+                // Check if we're on the results screen by looking for the Study Again button
+                const studyAgainBtn = document.querySelector('.btn-submit[onclick="location.reload()"]');
+                
                 if (setupVisible) {
                     e.preventDefault();
                     startQuiz();
+                } else if (studyAgainBtn) {
+                    e.preventDefault();
+                    location.reload();
                 } else if (!answered) {
                     e.preventDefault();
                     checkAnswer();
