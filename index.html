@@ -288,7 +288,8 @@
             },
             {
                 q: "What are two rights in the Declaration of Independence?",
-                a: ["life", "liberty", "pursuit of happiness", "life and liberty", "life and pursuit of happiness", "liberty and pursuit of happiness"]
+                a: ["life", "liberty", "pursuit of happiness"],
+                minCorrect: 2
             },
             {
                 q: "What is freedom of religion?",
@@ -332,7 +333,7 @@
             },
             {
                 q: "Who is one of your state's U.S. Senators now?",
-                a: ["answers will vary", "elizabeth warren", "ed markey"]
+                a: ["elizabeth warren", "ed markey"]
             },
             {
                 q: "The House of Representatives has how many voting members?",
@@ -344,7 +345,7 @@
             },
             {
                 q: "Name your U.S. Representative.",
-                a: ["answers will vary"]
+                a: ["ayanna pressley"]
             },
             {
                 q: "Who does a U.S. Senator represent?",
@@ -396,7 +397,8 @@
             },
             {
                 q: "What are two Cabinet-level positions?",
-                a: ["secretary of agriculture", "secretary of commerce", "secretary of defense", "secretary of education", "secretary of energy", "secretary of health and human services", "secretary of homeland security", "secretary of housing and urban development", "secretary of the interior", "secretary of labor", "secretary of state", "secretary of transportation", "secretary of the treasury", "secretary of veterans affairs", "attorney general", "vice president"]
+                a: ["secretary of agriculture", "secretary of commerce", "secretary of defense", "secretary of education", "secretary of energy", "secretary of health and human services", "secretary of homeland security", "secretary of housing and urban development", "secretary of the interior", "secretary of labor", "secretary of state", "secretary of transportation", "secretary of the treasury", "secretary of veterans affairs", "attorney general", "vice president"],
+                minCorrect: 2
             },
             {
                 q: "What does the judicial branch do?",
@@ -456,7 +458,8 @@
             },
             {
                 q: "What are two rights of everyone living in the United States?",
-                a: ["freedom of expression", "freedom of speech", "freedom of assembly", "freedom to petition the government", "freedom of religion", "the right to bear arms"]
+                a: ["freedom of expression", "freedom of speech", "freedom of assembly", "freedom to petition the government", "freedom of religion", "the right to bear arms"],
+                minCorrect: 2
             },
             {
                 q: "What do we show loyalty to when we say the Pledge of Allegiance?",
@@ -472,11 +475,12 @@
             },
             {
                 q: "What are two ways that Americans can participate in their democracy?",
-                a: ["vote", "join a political party", "help with a campaign", "join a civic group", "join a community group", "give an elected official your opinion", "call senators and representatives", "publicly support or oppose an issue or policy", "run for office", "write to a newspaper"]
+                a: ["vote", "join a political party", "help with a campaign", "join a civic group", "join a community group", "give an elected official your opinion", "call senators and representatives", "publicly support or oppose an issue or policy", "run for office", "write to a newspaper"],
+                minCorrect: 2
             },
             {
                 q: "When is the last day you can send in federal income tax forms?",
-                a: ["april 15", "april fifteenth"]
+                a: ["april 15", "april fifteenth", "april 15th"]
             },
             {
                 q: "When must all men register for the Selective Service?",
@@ -508,7 +512,8 @@
             },
             {
                 q: "There were 13 original states. Name three.",
-                a: ["new hampshire", "massachusetts", "rhode island", "connecticut", "new york", "new jersey", "pennsylvania", "delaware", "maryland", "virginia", "north carolina", "south carolina", "georgia"]
+                a: ["new hampshire", "massachusetts", "rhode island", "connecticut", "new york", "new jersey", "pennsylvania", "delaware", "maryland", "virginia", "north carolina", "south carolina", "georgia"],
+                minCorrect: 3
             },
             {
                 q: "What happened at the Constitutional Convention?",
@@ -564,7 +569,7 @@
             },
             {
                 q: "Name one war fought by the United States in the 1900s.",
-                a: ["world war i", "world war ii", "korean war", "vietnam war", "gulf war", "persian gulf war", "wwi", "wwii"]
+                a: ["world war i", "world war ii", "korean war", "vietnam war", "gulf war", "persian gulf war"]
             },
             {
                 q: "Who was President during World War I?",
@@ -580,7 +585,7 @@
             },
             {
                 q: "Before he was President, Eisenhower was a general. What war was he in?",
-                a: ["world war ii", "world war two", "wwii"]
+                a: ["world war ii", "world war two"]
             },
             {
                 q: "During the Cold War, what was the main concern of the United States?",
@@ -604,7 +609,7 @@
             },
             {
                 q: "Name one of the two longest rivers in the United States.",
-                a: ["missouri river", "mississippi river", "missouri", "mississippi"]
+                a: ["missouri river", "mississippi river"]
             },
             {
                 q: "What ocean is on the West Coast of the United States?",
@@ -628,11 +633,11 @@
             },
             {
                 q: "What is the capital of the United States?",
-                a: ["washington dc", "dc"]
+                a: ["washington dc", "washington"]
             },
             {
                 q: "Where is the Statue of Liberty?",
-                a: ["new york", "new york harbor", "liberty island", "ny"]
+                a: ["new york", "new york harbor", "liberty island"]
             },
             {
                 q: "Why does the flag have 13 stripes?",
@@ -640,7 +645,7 @@
             },
             {
                 q: "Why does the flag have 50 stars?",
-                a: ["because there is one star for each state", "because each star represents a state", "because there are 50 states", "each star represents a state", "there is one star for each state", "there are 50 states"]
+                a: ["because there is one star for each state", "because each star represents a state", "because there are 50 states"]
             },
             {
                 q: "What is the name of the national anthem?",
@@ -652,10 +657,10 @@
             },
             {
                 q: "Name two national U.S. holidays.",
-                a: ["new years day", "martin luther king jr day", "presidents day", "memorial day", "independence day", "labor day", "columbus day", "veterans day", "thanksgiving", "christmas"]
+                a: ["new years day", "martin luther king jr day", "presidents day", "memorial day", "independence day", "labor day", "columbus day", "veterans day", "thanksgiving", "christmas"],
+                minCorrect: 2
             }
         ];
-          
 
         let currentQuestion = 0;
         let correctCount = 0;
@@ -716,6 +721,21 @@
             return str.toLowerCase().trim().replace(/[^\w\s]/g, '');
         }
 
+        function stemWord(word) {
+            // Simple stemming - remove common plural and verb endings
+            // Remove trailing 's' for plurals
+            if (word.endsWith('ies') && word.length > 4) {
+                return word.slice(0, -3) + 'y';
+            }
+            if (word.endsWith('es') && word.length > 3) {
+                return word.slice(0, -2);
+            }
+            if (word.endsWith('s') && word.length > 2) {
+                return word.slice(0, -1);
+            }
+            return word;
+        }
+
         function getKeywords(str) {
             // Common filler words to ignore
             const fillerWords = new Set([
@@ -733,7 +753,7 @@
             const words = normalized.split(/\s+/).filter(word => 
                 word.length > 0 && !fillerWords.has(word)
             );
-            return words;
+            return words.map(stemWord);
         }
 
         function checkAnswerMatch(userAnswer, acceptedAnswers, minCorrect = null) {
