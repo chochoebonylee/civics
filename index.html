@@ -289,7 +289,7 @@
             },
             {
                 q: "Name your U.S. Representative.",
-                a: ["answers will vary"]
+                a: ["ayanna pressley"]
             },
             {
                 q: "Who does a U.S. Senator represent?",
@@ -309,11 +309,11 @@
             },
             {
                 q: "What is the name of the President of the United States now?",
-                a: ["donald trump", "trump", "joe biden", "biden"]
+                a: ["donald trump", "trump", "donald j. trump", "donald john trump"]
             },
             {
                 q: "What is the name of the Vice President of the United States now?",
-                a: ["jd vance", "vance", "kamala harris", "harris"]
+                a: ["jd vance", "vance"]
             },
             {
                 q: "If the President can no longer serve, who becomes President?",
@@ -369,7 +369,7 @@
             },
             {
                 q: "Who is the Governor of your state now?",
-                a: ["answers will vary", "maura healey", "healey"]
+                a: ["maura healey", "healey"]
             },
             {
                 q: "What is the capital of your state?",
@@ -385,7 +385,7 @@
             },
             {
                 q: "What is the name of the Speaker of the House of Representatives now?",
-                a: ["mike johnson", "johnson"]
+                a: ["mike johnson", "johnson", "james michael johnson"]
             },
             {
                 q: "There are four amendments to the Constitution about who can vote. Describe one of them.",
@@ -605,9 +605,27 @@
         let correctCount = 0;
         let incorrectCount = 0;
         let answered = false;
+        let shuffledQuestions = [];
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function initQuiz() {
+            shuffledQuestions = shuffleArray(questions);
+            currentQuestion = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            loadQuestion();
+        }
 
         function loadQuestion() {
-            const q = questions[currentQuestion];
+            const q = shuffledQuestions[currentQuestion];
             document.getElementById('question').textContent = q.q;
             document.getElementById('answerInput').value = '';
             document.getElementById('feedback').classList.remove('show', 'correct', 'incorrect');
@@ -616,7 +634,7 @@
             document.getElementById('dontKnowBtn').disabled = false;
             document.getElementById('answerInput').disabled = false;
             document.getElementById('currentQ').textContent = currentQuestion + 1;
-            document.getElementById('totalQ').textContent = questions.length;
+            document.getElementById('totalQ').textContent = shuffledQuestions.length;
             answered = false;
         }
 
@@ -628,7 +646,7 @@
             if (answered) return;
 
             const userAnswer = document.getElementById('answerInput').value;
-            const q = questions[currentQuestion];
+            const q = shuffledQuestions[currentQuestion];
             const feedback = document.getElementById('feedback');
             
             const normalized = normalizeAnswer(userAnswer);
@@ -657,7 +675,7 @@
         function dontKnow() {
             if (answered) return;
 
-            const q = questions[currentQuestion];
+            const q = shuffledQuestions[currentQuestion];
             const feedback = document.getElementById('feedback');
 
             answered = true;
@@ -675,7 +693,7 @@
 
         function nextQuestion() {
             currentQuestion++;
-            if (currentQuestion >= questions.length) {
+            if (currentQuestion >= shuffledQuestions.length) {
                 showResults();
             } else {
                 loadQuestion();
@@ -684,13 +702,13 @@
 
         function showResults() {
             const container = document.querySelector('.question-card');
-            const percentage = Math.round((correctCount / questions.length) * 100);
+            const percentage = Math.round((correctCount / shuffledQuestions.length) * 100);
             container.innerHTML = `
                 <div style="text-align: center;">
                     <h2 style="color: #667eea; margin-bottom: 20px;">🎉 Quiz Complete!</h2>
                     <div style="font-size: 3em; margin: 20px 0;">${percentage}%</div>
                     <div style="font-size: 1.2em; margin-bottom: 30px;">
-                        You got <span class="correct">${correctCount}</span> out of ${questions.length} correct!
+                        You got <span class="correct">${correctCount}</span> out of ${shuffledQuestions.length} correct!
                     </div>
                     <button class="btn-submit" onclick="location.reload()" style="width: 100%;">Try Again</button>
                 </div>
