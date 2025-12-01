@@ -132,10 +132,22 @@
             background: #10b981;
             color: white;
             width: 100%;
+            margin-top: 10px;
         }
 
         .btn-next:hover {
             background: #059669;
+        }
+
+        .btn-override {
+            background: #f59e0b;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-override:hover {
+            background: #d97706;
         }
 
         .feedback {
@@ -194,6 +206,7 @@
             </div>
             <div class="feedback" id="feedback"></div>
             <button class="btn-next" id="nextBtn" onclick="nextQuestion()" style="display: none;">Next Question</button>
+            <button class="btn-override" id="overrideBtn" onclick="overrideCorrect()" style="display: none;">Actually, I Got It Correct</button>
         </div>
     </div>
 
@@ -601,6 +614,7 @@
             }
         ];
 
+
         let currentQuestion = 0;
         let correctCount = 0;
         let incorrectCount = 0;
@@ -630,16 +644,68 @@
             document.getElementById('answerInput').value = '';
             document.getElementById('feedback').classList.remove('show', 'correct', 'incorrect');
             document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('overrideBtn').style.display = 'none';
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('dontKnowBtn').disabled = false;
             document.getElementById('answerInput').disabled = false;
             document.getElementById('currentQ').textContent = currentQuestion + 1;
             document.getElementById('totalQ').textContent = shuffledQuestions.length;
             answered = false;
+            document.getElementById('answerInput').focus();
         }
 
         function normalizeAnswer(str) {
             return str.toLowerCase().trim().replace(/[^\w\s]/g, '');
+        }
+
+        function getKeywords(str) {
+            // Common filler words to ignore
+            const fillerWords = new Set([
+                'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+                'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'be',
+                'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
+                'would', 'could', 'should', 'may', 'might', 'can', 'must', 'that',
+                'this', 'these', 'those', 'it', 'its', 'their', 'our', 'your',
+                'who', 'what', 'where', 'when', 'why', 'how', 'all', 'each', 'every',
+                'both', 'few', 'more', 'most', 'other', 'some', 'such', 'than', 'too',
+                'very', 'any', 'many', 'much', 'there', 'because', 'you', 'they', 'we'
+            ]);
+            
+            const normalized = normalizeAnswer(str);
+            const words = normalized.split(/\s+/).filter(word => 
+                word.length > 0 && !fillerWords.has(word)
+            );
+            return words;
+        }
+
+        function checkAnswerMatch(userAnswer, acceptedAnswers) {
+            const normalized = normalizeAnswer(userAnswer);
+            
+            // First check for exact matches
+            for (let answer of acceptedAnswers) {
+                if (normalizeAnswer(answer) === normalized) {
+                    return true;
+                }
+            }
+            
+            // Then check if user answer contains all keywords from any accepted answer
+            for (let answer of acceptedAnswers) {
+                const answerKeywords = getKeywords(answer);
+                const userKeywords = getKeywords(userAnswer);
+                
+                // Check if all keywords from the accepted answer are in the user's answer
+                const allKeywordsPresent = answerKeywords.every(keyword => 
+                    userKeywords.some(userKeyword => 
+                        userKeyword.includes(keyword) || keyword.includes(userKeyword)
+                    )
+                );
+                
+                if (allKeywordsPresent && answerKeywords.length > 0) {
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         function checkAnswer() {
@@ -649,8 +715,7 @@
             const q = shuffledQuestions[currentQuestion];
             const feedback = document.getElementById('feedback');
             
-            const normalized = normalizeAnswer(userAnswer);
-            const isCorrect = q.a.some(ans => normalizeAnswer(ans) === normalized);
+            const isCorrect = checkAnswerMatch(userAnswer, q.a);
 
             answered = true;
             document.getElementById('submitBtn').disabled = true;
@@ -665,6 +730,7 @@
                 incorrectCount++;
                 feedback.className = 'feedback incorrect show';
                 feedback.innerHTML = `✗ Incorrect. Acceptable answers:<div class="answer-list">• ${q.a.join('<br>• ')}</div>`;
+                document.getElementById('overrideBtn').style.display = 'block';
             }
 
             document.getElementById('correctCount').textContent = correctCount;
@@ -689,6 +755,21 @@
 
             document.getElementById('incorrectCount').textContent = incorrectCount;
             document.getElementById('nextBtn').style.display = 'block';
+            document.getElementById('overrideBtn').style.display = 'block';
+        }
+
+        function overrideCorrect() {
+            correctCount++;
+            incorrectCount--;
+            
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('incorrectCount').textContent = incorrectCount;
+            
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback correct show';
+            feedback.innerHTML = '✓ Overridden to Correct!';
+            
+            document.getElementById('overrideBtn').style.display = 'none';
         }
 
         function nextQuestion() {
@@ -715,13 +796,19 @@
             `;
         }
 
-        document.getElementById('answerInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !answered) {
-                checkAnswer();
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                if (!answered) {
+                    e.preventDefault();
+                    checkAnswer();
+                } else {
+                    e.preventDefault();
+                    nextQuestion();
+                }
             }
         });
 
-        loadQuestion();
+        initQuiz();
     </script>
 </body>
 </html>
