@@ -90,6 +90,32 @@
             border-color: #667eea;
         }
 
+        input[type="number"] {
+            width: 100%;
+            padding: 20px;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 2em;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: scale(1.02);
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+            height: 50px;
+        }
+
         .button-group {
             display: flex;
             gap: 10px;
@@ -188,25 +214,41 @@
 </head>
 <body>
     <div class="container">
-        <h1>🇺🇸 Civics Test Study</h1>
-        <div class="progress">Question <span id="currentQ">1</span> of <span id="totalQ">10</span></div>
-        <div class="score">
-            <div class="correct">Correct: <span id="correctCount">0</span></div>
-            <div class="incorrect">Incorrect: <span id="incorrectCount">0</span></div>
+        <div id="setupScreen">
+            <h1>🇺🇸 Civics Test Study</h1>
+            <div class="question-card">
+                <div class="question" style="text-align: center; margin-bottom: 30px;">How many questions would you like to study?</div>
+                <div class="input-group">
+                    <input type="number" id="numQuestionsInput" min="1" max="100" value="10" />
+                </div>
+                <div style="text-align: center; color: #64748b; margin-bottom: 20px; font-size: 0.9em;">
+                    Choose between 1 and 100 questions
+                </div>
+                <button class="btn-submit" onclick="startQuiz()" style="width: 100%;">Start Quiz</button>
+            </div>
         </div>
 
-        <div class="question-card">
-            <div class="question" id="question"></div>
-            <div class="input-group">
-                <input type="text" id="answerInput" placeholder="Type your answer here..." />
+        <div id="quizScreen" style="display: none;">
+            <h1>🇺🇸 Civics Test Study</h1>
+            <div class="progress">Question <span id="currentQ">1</span> of <span id="totalQ">10</span></div>
+            <div class="score">
+                <div class="correct">Correct: <span id="correctCount">0</span></div>
+                <div class="incorrect">Incorrect: <span id="incorrectCount">0</span></div>
             </div>
-            <div class="button-group">
-                <button class="btn-submit" id="submitBtn" onclick="checkAnswer()">Submit Answer</button>
-                <button class="btn-dont-know" id="dontKnowBtn" onclick="dontKnow()">Don't Know</button>
+
+            <div class="question-card">
+                <div class="question" id="question"></div>
+                <div class="input-group">
+                    <input type="text" id="answerInput" placeholder="Type your answer here..." />
+                </div>
+                <div class="button-group">
+                    <button class="btn-submit" id="submitBtn" onclick="checkAnswer()">Submit Answer</button>
+                    <button class="btn-dont-know" id="dontKnowBtn" onclick="dontKnow()">Don't Know</button>
+                </div>
+                <div class="feedback" id="feedback"></div>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()" style="display: none;">Next Question</button>
+                <button class="btn-override" id="overrideBtn" onclick="overrideCorrect()" style="display: none;">Actually, I Got It Correct</button>
             </div>
-            <div class="feedback" id="feedback"></div>
-            <button class="btn-next" id="nextBtn" onclick="nextQuestion()" style="display: none;">Next Question</button>
-            <button class="btn-override" id="overrideBtn" onclick="overrideCorrect()" style="display: none;">Actually, I Got It Correct</button>
         </div>
     </div>
 
@@ -290,7 +332,7 @@
             },
             {
                 q: "Who is one of your state's U.S. Senators now?",
-                a: ["elizabeth warren", "ed markey"]
+                a: ["answers will vary", "elizabeth warren", "ed markey"]
             },
             {
                 q: "The House of Representatives has how many voting members?",
@@ -302,7 +344,7 @@
             },
             {
                 q: "Name your U.S. Representative.",
-                a: ["ayanna pressley"]
+                a: ["answers will vary"]
             },
             {
                 q: "Who does a U.S. Senator represent?",
@@ -322,11 +364,11 @@
             },
             {
                 q: "What is the name of the President of the United States now?",
-                a: ["donald trump", "trump", "donald j. trump", "donald john trump"]
+                a: ["donald trump", "trump", "joe biden", "biden"]
             },
             {
                 q: "What is the name of the Vice President of the United States now?",
-                a: ["jd vance", "vance"]
+                a: ["jd vance", "vance", "kamala harris", "harris"]
             },
             {
                 q: "If the President can no longer serve, who becomes President?",
@@ -370,7 +412,7 @@
             },
             {
                 q: "Who is the Chief Justice of the United States now?",
-                a: ["john roberts", "roberts", "john g. roberts jr."]
+                a: ["john roberts", "roberts"]
             },
             {
                 q: "Under our Constitution, some powers belong to the federal government. What is one power of the federal government?",
@@ -382,7 +424,7 @@
             },
             {
                 q: "Who is the Governor of your state now?",
-                a: ["maura healey", "healey"]
+                a: ["answers will vary", "maura healey", "healey"]
             },
             {
                 q: "What is the capital of your state?",
@@ -398,7 +440,7 @@
             },
             {
                 q: "What is the name of the Speaker of the House of Representatives now?",
-                a: ["mike johnson", "johnson", "james michael johnson"]
+                a: ["mike johnson", "johnson"]
             },
             {
                 q: "There are four amendments to the Constitution about who can vote. Describe one of them.",
@@ -614,12 +656,12 @@
             }
         ];
 
-
         let currentQuestion = 0;
         let correctCount = 0;
         let incorrectCount = 0;
         let answered = false;
         let shuffledQuestions = [];
+        let numQuestions = 10;
 
         function shuffleArray(array) {
             const shuffled = [...array];
@@ -630,8 +672,23 @@
             return shuffled;
         }
 
+        function startQuiz() {
+            const input = document.getElementById('numQuestionsInput').value;
+            numQuestions = parseInt(input);
+            
+            if (isNaN(numQuestions) || numQuestions < 1 || numQuestions > 100) {
+                alert('Please enter a number between 1 and 100');
+                return;
+            }
+            
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('quizScreen').style.display = 'block';
+            initQuiz();
+        }
+
         function initQuiz() {
-            shuffledQuestions = shuffleArray(questions);
+            const allShuffled = shuffleArray(questions);
+            shuffledQuestions = allShuffled.slice(0, numQuestions);
             currentQuestion = 0;
             correctCount = 0;
             incorrectCount = 0;
@@ -694,10 +751,9 @@
                 const userKeywords = getKeywords(userAnswer);
                 
                 // Check if all keywords from the accepted answer are in the user's answer
+                // Now requires exact keyword matches, not partial
                 const allKeywordsPresent = answerKeywords.every(keyword => 
-                    userKeywords.some(userKeyword => 
-                        userKeyword.includes(keyword) || keyword.includes(userKeyword)
-                    )
+                    userKeywords.includes(keyword)
                 );
                 
                 if (allKeywordsPresent && answerKeywords.length > 0) {
@@ -782,23 +838,28 @@
         }
 
         function showResults() {
-            const container = document.querySelector('.question-card');
-            const percentage = Math.round((correctCount / shuffledQuestions.length) * 100);
-            container.innerHTML = `
-                <div style="text-align: center;">
-                    <h2 style="color: #667eea; margin-bottom: 20px;">🎉 Quiz Complete!</h2>
-                    <div style="font-size: 3em; margin: 20px 0;">${percentage}%</div>
-                    <div style="font-size: 1.2em; margin-bottom: 30px;">
-                        You got <span class="correct">${correctCount}</span> out of ${shuffledQuestions.length} correct!
+            document.getElementById('quizScreen').innerHTML = `
+                <h1>🇺🇸 Civics Test Study</h1>
+                <div class="question-card">
+                    <div style="text-align: center;">
+                        <h2 style="color: #667eea; margin-bottom: 20px;">🎉 Quiz Complete!</h2>
+                        <div style="font-size: 3em; margin: 20px 0;">${Math.round((correctCount / shuffledQuestions.length) * 100)}%</div>
+                        <div style="font-size: 1.2em; margin-bottom: 30px;">
+                            You got <span class="correct">${correctCount}</span> out of ${shuffledQuestions.length} correct!
+                        </div>
+                        <button class="btn-submit" onclick="location.reload()" style="width: 100%;">Study Again</button>
                     </div>
-                    <button class="btn-submit" onclick="location.reload()" style="width: 100%;">Try Again</button>
                 </div>
             `;
         }
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
-                if (!answered) {
+                const setupVisible = document.getElementById('setupScreen').style.display !== 'none';
+                if (setupVisible) {
+                    e.preventDefault();
+                    startQuiz();
+                } else if (!answered) {
                     e.preventDefault();
                     checkAnswer();
                 } else {
@@ -807,8 +868,6 @@
                 }
             }
         });
-
-        initQuiz();
     </script>
 </body>
 </html>
